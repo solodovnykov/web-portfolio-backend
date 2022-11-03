@@ -6,7 +6,9 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { validationResult } from "express-validator";
 import { registerValidation } from "./validations/auth.js";
+
 import UserModel from "./models/User.js";
+import checkAuth from "./utils/checkAuth.js";
 
 dotenv.config();
 
@@ -108,6 +110,16 @@ app.post("/auth/register", registerValidation, async (req, res) => {
     res.status(500).json({
       message: "Registration failed",
     });
+  }
+});
+
+app.get("/auth/me", checkAuth, async (req, res) => {
+  try {
+    res.json({
+      success: true
+    })
+  } catch (error) {
+    
   }
 });
 
