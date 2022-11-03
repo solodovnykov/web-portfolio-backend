@@ -25,6 +25,50 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.post("/auth/login", async (req, res) => {
+  try {
+    const user = await UserModel.findOne({ email: req.body.email });
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const isValidPassword = await argon2.verify(
+      user._doc.passwordHash,
+      req.body.password
+    );
+
+    if (!isValidPassword) {
+      return res.status(404).json({
+        message: "The username or password is incorrect",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        _id: user._id,
+      },
+      process.env.JWT_KEY,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN,
+      }
+    );
+
+    const { passwordHash, ...useData } = user._doc;
+
+    res.json({
+      ...useData,
+      token,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Authorization failed",
+    });
+  }
+});
+
 app.post("/auth/register", registerValidation, async (req, res) => {
   try {
     const errors = validationResult(req);
