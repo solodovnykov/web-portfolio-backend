@@ -1,14 +1,11 @@
 import express from "express";
 import cors from "cors";
-import jwt from "jsonwebtoken";
-import argon2 from "argon2";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { validationResult } from "express-validator";
 import { registerValidation } from "./validations/auth.js";
 
-import UserModel from "./models/User.js";
 import checkAuth from "./utils/checkAuth.js";
+import * as UserController from "./controllers/UserController.js";
 
 dotenv.config();
 
@@ -27,101 +24,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.post("/auth/login", async (req, res) => {
-  try {
-    const user = await UserModel.findOne({ email: req.body.email });
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    const isValidPassword = await argon2.verify(
-      user._doc.passwordHash,
-      req.body.password
-    );
-
-    if (!isValidPassword) {
-      return res.status(404).json({
-        message: "The username or password is incorrect",
-      });
-    }
-
-    const token = jwt.sign(
-      {
-        _id: user._id,
-      },
-      process.env.JWT_KEY,
-      {
-        expiresIn: process.env.JWT_EXPIRES_IN,
-      }
-    );
-
-    const { passwordHash, ...useData } = user._doc;
-
-    res.json({
-      ...useData,
-      token,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: "Authorization failed",
-    });
-  }
-});
-
-app.post("/auth/register", registerValidation, async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json(errors.array());
-    }
-
-    const password = req.body.password;
-    const hash = await argon2.hash(password, { type: argon2.argon2id });
-
-    const doc = new UserModel({
-      email: req.body.email,
-      fullName: req.body.fullName,
-      passwordHash: hash,
-    });
-
-    const user = await doc.save();
-
-    const token = jwt.sign(
-      {
-        _id: user._id,
-      },
-      process.env.JWT_KEY,
-      {
-        expiresIn: process.env.JWT_EXPIRES_IN,
-      }
-    );
-
-    const { passwordHash, ...useData } = user._doc;
-
-    res.json({
-      ...useData,
-      token,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      message: "Registration failed",
-    });
-  }
-});
-
-app.get("/auth/me", checkAuth, async (req, res) => {
-  try {
-    res.json({
-      success: true
-    })
-  } catch (error) {
-    
-  }
-});
+app.post("/auth/login", UserController.login);
+app.post("/auth/register", registerValidation, UserController.register);
+app.get("/auth/me", checkAuth, UserController.getMe);
 
 app.listen(process.env.PORT || 5555, (error) => {
   if (error) {
