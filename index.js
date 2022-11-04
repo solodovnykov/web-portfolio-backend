@@ -2,7 +2,11 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { registerValidation } from "./validations/auth.js";
+import {
+  registerValidation,
+  loginValidation,
+  postCreateValidation,
+} from "./validations.js";
 
 import checkAuth from "./utils/checkAuth.js";
 import * as UserController from "./controllers/UserController.js";
@@ -24,7 +28,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.post("/auth/login", UserController.login);
+app.post("/auth/login", loginValidation, UserController.login);
 app.post("/auth/register", registerValidation, UserController.register);
 app.get("/auth/me", checkAuth, UserController.getMe);
 
