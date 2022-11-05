@@ -1,4 +1,5 @@
 import PostModel from '../models/Post.js'
+import fs from 'fs'
 
 export const getAll = async (req, res) => {
     try {
@@ -99,6 +100,9 @@ export const remove = async (req, res) => {
     try {
         const postId = req.params.id
 
+        const post = await PostModel.findById(postId)
+        const fileUrl = post.imageUrl
+
         PostModel.findOneAndRemove(
             {
                 _id: postId,
@@ -119,6 +123,17 @@ export const remove = async (req, res) => {
 
                 res.json({
                     success: true,
+                })
+
+                console.log(fileUrl)
+
+                //remove image from file storage
+                fs.access(`.${fileUrl}`, (error) => {
+                    if (!error && fileUrl) {
+                        fs.unlinkSync(`.${fileUrl}`)
+                    } else {
+                        console.warn(error)
+                    }
                 })
             }
         )
