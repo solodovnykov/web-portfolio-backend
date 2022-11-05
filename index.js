@@ -4,28 +4,11 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import multer from 'multer'
 import helmet from 'helmet'
-import {
-    registerValidation,
-    loginValidation,
-    postCreateValidation,
-} from './validations.js'
 
-import checkAuth from './utils/checkAuth.js'
-import * as UserController from './controllers/UserController.js'
-import * as PostController from './controllers/PostController.js'
-import handleValidationErrors from './utils/handleValidationErrors.js'
+import { checkAuth } from './utils/index.js'
+import { postRoutes, authRoutes } from './routes/index.js'
 
 dotenv.config()
-
-mongoose
-    .connect(
-        `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.7nqxsud.mongodb.net/web-portfolio?retryWrites=true&w=majority`
-    )
-
-    .then(() => {
-        console.log('DB is OK')
-    })
-    .catch((error) => console.log('Db Error', error))
 
 const app = express()
 
@@ -51,40 +34,21 @@ app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
     })
 })
 
-app.post(
-    '/auth/login',
-    loginValidation,
-    handleValidationErrors,
-    UserController.login
-)
-app.post(
-    '/auth/register',
-    registerValidation,
-    handleValidationErrors,
-    UserController.register
-)
-app.get('/auth/me', checkAuth, UserController.getMe)
+app.use('/auth', authRoutes)
+app.use('/posts', postRoutes)
 
-app.get('/posts', PostController.getAll)
-app.get('/posts/:id', PostController.getOne)
-app.post(
-    '/posts',
-    checkAuth,
-    postCreateValidation,
-    handleValidationErrors,
-    PostController.create
-)
-app.delete('/posts/:id', checkAuth, PostController.remove)
-app.patch(
-    '/posts/:id',
-    checkAuth,
-    handleValidationErrors,
-    PostController.update
-)
+const DB_URI = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.7nqxsud.mongodb.net/web-portfolio?retryWrites=true&w=majority`
 
-app.listen(process.env.PORT || 5555, (error) => {
-    if (error) {
-        return console.log(error)
-    }
-    console.log('Server has been started.')
-})
+mongoose
+    .connect(DB_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
+
+    .then(() => {
+        console.log('DB is OK')
+        app.listen(process.env.PORT || 5555, () =>
+            console.log(`Server running on port: ${process.env.PORT}`)
+        )
+    })
+    .catch((error) => console.log(error.message))
