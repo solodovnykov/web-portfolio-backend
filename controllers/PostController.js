@@ -2,7 +2,15 @@ import PostModel from '../models/Post.js'
 
 export const getAll = async (req, res) => {
     try {
+        let { page = 1, size = 5 } = req.query
+
+        const limit = parseInt(size)
+        const skip = (parseInt(page) - 1) * size
+        const total = await PostModel.countDocuments({})
+
         const posts = await PostModel.find()
+            .limit(limit)
+            .skip(skip)
             .populate('user', [
                 'fullName',
                 'email',
@@ -12,7 +20,11 @@ export const getAll = async (req, res) => {
             ])
             .exec()
 
-        res.json(posts)
+        res.json({
+            currentPage: parseInt(page),
+            numberOfPages: Math.ceil(total / limit),
+            data: posts,
+        })
     } catch (error) {
         console.log(error)
         res.status(500).json({
@@ -67,7 +79,7 @@ export const create = async (req, res) => {
         const doc = new PostModel({
             title: req.body.title,
             text: req.body.text,
-            tags: req.body.tags,
+            tags: req.body.tags.split(','),
             imageUrl: req.body.imageUrl,
             user: req.userId,
         })
