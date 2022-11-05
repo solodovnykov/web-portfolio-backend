@@ -125,8 +125,6 @@ export const remove = async (req, res) => {
                     success: true,
                 })
 
-                console.log(fileUrl)
-
                 //remove image from file storage
                 fs.access(`.${fileUrl}`, (error) => {
                     if (!error && fileUrl) {
@@ -148,6 +146,17 @@ export const remove = async (req, res) => {
 export const update = async (req, res) => {
     try {
         const postId = req.params.id
+
+        const post = await PostModel.findById(postId)
+        const fileUrl = post.imageUrl
+
+        fs.access(`.${fileUrl}`, (error) => {
+            if (!error && req.body.imageUrl !== fileUrl && fileUrl) {
+                fs.unlinkSync(`.${fileUrl}`)
+            } else {
+                console.warn(error)
+            }
+        })
 
         await PostModel.updateOne(
             {
