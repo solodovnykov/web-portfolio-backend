@@ -31,6 +31,7 @@ export const uploadImage = async (req, res) => {
             })
             .webp({ quality: 80 })
             .toFile(path.resolve(req.file.destination, 'resized', image))
+
         fs.unlinkSync(req.file.path)
 
         res.json({
