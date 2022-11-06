@@ -1,7 +1,13 @@
 import PostModel from '../models/Post.js'
 import fs from 'fs'
 
+let cachedData
+let cacheTime
+
 export const getAll = async (req, res) => {
+    if (cacheTime && cacheTime > Date.now() - 30 * 1000) {
+        return res.json(cachedData)
+    }
     try {
         let { page = 1, size = 5 } = req.query
 
@@ -21,7 +27,14 @@ export const getAll = async (req, res) => {
             ])
             .exec()
 
-        res.json({
+        cachedData = {
+            currentPage: parseInt(page),
+            numberOfPages: Math.ceil(total / limit),
+            data: posts,
+        }
+        cacheTime = Date.now()
+
+        return res.json({
             currentPage: parseInt(page),
             numberOfPages: Math.ceil(total / limit),
             data: posts,
