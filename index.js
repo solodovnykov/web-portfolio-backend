@@ -2,37 +2,22 @@ import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
-import multer from 'multer'
 import helmet from 'helmet'
 
-import { checkAuth } from './utils/index.js'
-import { postRoutes, authRoutes } from './routes/index.js'
+import { postRoutes, authRoutes, uploadRoutes } from './routes/index.js'
 
 dotenv.config()
 
 const app = express()
 
-const storage = multer.diskStorage({
-    destination: (_, __, cb) => {
-        cb(null, 'uploads')
-    },
-    filename: (_, file, cb) => {
-        cb(null, file.originalname)
-    },
-})
-
-const upload = multer({ storage })
-
 app.use(express.json())
 app.use(cors())
 app.use(helmet())
-app.use('/uploads', express.static('uploads'))
 
-app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
-    res.json({
-        url: `/uploads/${req.file.originalname}`,
-    })
-})
+app.use('/uploads/resized', express.static('uploads/resized'))
+
+app.use('/upload/:imageUrl', uploadRoutes)
+app.use('/upload', uploadRoutes)
 
 app.use('/auth', authRoutes)
 app.use('/posts', postRoutes)
