@@ -6,11 +6,13 @@ import helmet from 'helmet'
 import compression from 'compression'
 
 import { postRoutes, authRoutes, uploadRoutes } from './routes/index.js'
+import { rateLimiter } from './utils/index.js'
 
 dotenv.config()
 
 const app = express()
 
+app.use(rateLimiter)
 app.use(express.json())
 app.use(cors())
 app.use(helmet())
