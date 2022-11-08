@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import helmet from 'helmet'
 import compression from 'compression'
+import bodyParser from 'body-parser'
 
 import { postRoutes, authRoutes, uploadRoutes } from './routes/index.js'
 import { rateLimiter } from './utils/index.js'
@@ -17,6 +18,8 @@ app.use(express.json())
 app.use(cors())
 app.use(helmet())
 app.use(compression())
+app.use(bodyParser.json({ limit: '2kb', extended: true }))
+app.use(bodyParser.urlencoded({ limit: '1kb', extended: true }))
 
 app.use('/uploads/resized', express.static('uploads/resized'))
 
