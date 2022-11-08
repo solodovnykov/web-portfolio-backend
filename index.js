@@ -6,6 +6,7 @@ import helmet from 'helmet'
 import compression from 'compression'
 import bodyParser from 'body-parser'
 import mongoSanitize from 'express-mongo-sanitize'
+import hpp from 'hpp'
 
 import { postRoutes, authRoutes, uploadRoutes } from './routes/index.js'
 import { rateLimiter } from './utils/index.js'
@@ -26,6 +27,7 @@ app.use(
         allowDots: true,
     })
 )
+app.use(hpp())
 
 app.use('/uploads/resized', express.static('uploads/resized'))
 
