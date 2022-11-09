@@ -3,13 +3,25 @@ import fs from 'fs'
 
 export const getAll = async (req, res) => {
     try {
-        let { page = 1, size = 5 } = req.query
+        let { page = 1, size = 5, search, tags } = req.query
+
+        // filters
+        let query = {}
+        if (search) {
+            query.title = {
+                $regex: search,
+                $options: 'i',
+            }
+        }
+        if (tags) {
+            query.tags = { $in: tags.split(',') }
+        }
 
         const limit = parseInt(size)
         const skip = (parseInt(page) - 1) * size
         const total = await PostModel.countDocuments({})
 
-        const posts = await PostModel.find()
+        const posts = await PostModel.find(query)
             .limit(limit)
             .skip(skip)
             .populate('user', [
