@@ -3,10 +3,11 @@ import fs from 'fs'
 
 export const getAll = async (req, res) => {
     try {
-        let { page = 1, size = 5, search, tags } = req.query
+        let { page = 1, size = 5, search, tags, sort } = req.query
 
         // filters
         let query = {}
+        let sortType = sort && sort === 'old' ? 1 : -1
         if (search) {
             query.title = {
                 $regex: search,
@@ -22,6 +23,7 @@ export const getAll = async (req, res) => {
         const total = await PostModel.countDocuments({})
 
         const posts = await PostModel.find(query)
+            .sort({ createdAt: sortType })
             .limit(limit)
             .skip(skip)
             .populate('user', [
