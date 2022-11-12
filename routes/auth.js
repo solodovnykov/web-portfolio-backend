@@ -5,6 +5,8 @@ import { registerValidation, loginValidation } from '../validations.js'
 
 const router = express.Router()
 
+router.post('/2fa/generate', UserController.generate2FACode)
+
 router.post(
     '/login',
     loginValidation,

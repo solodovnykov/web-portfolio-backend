@@ -7,6 +7,7 @@ import compression from 'compression'
 import bodyParser from 'body-parser'
 import mongoSanitize from 'express-mongo-sanitize'
 import hpp from 'hpp'
+import cookieParser from 'cookie-parser'
 
 import { postRoutes, authRoutes, uploadRoutes } from './routes/index.js'
 import { rateLimiter } from './utils/index.js'
@@ -15,6 +16,7 @@ dotenv.config()
 
 const app = express()
 
+app.use(cookieParser())
 app.use(rateLimiter)
 app.use(express.json())
 app.use(cors())
