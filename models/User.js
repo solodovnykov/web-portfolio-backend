@@ -15,11 +15,6 @@ const UserSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        twoFactorAuthCode: String,
-        twoFactorAuthEnabled: {
-            type: Boolean,
-            default: false,
-        },
     },
     {
         timestamps: true,
