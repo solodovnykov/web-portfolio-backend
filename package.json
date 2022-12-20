@@ -4,7 +4,11 @@
     "description": "Back-end for Web-portfolio",
     "main": "index.js",
     "type": "module",
+    "engines": {
+        "node": "14.x"
+    },
     "scripts": {
+        "start": "node index.js",
         "dev": "nodemon index.js",
         "format:check": "prettier --check .",
         "format:write": "prettier --write .",
